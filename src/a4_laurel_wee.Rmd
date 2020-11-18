@@ -1,0 +1,60 @@
+---
+title: "Assignment 4"
+author: "By: Laurel Wee"
+date: "11/18/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+library(tidyverse)
+library(effsize)
+library(broom)
+library(palmerpenguins)
+library(ggbeeswarm)
+library(kableExtra)
+library(here)
+library(lubridate)
+library(dplyr)
+```
+
+### A. Introduction
+
+### B. Data and analysis
+
+### C. Exploratory findings
+
+## i. Annual juvenile hare trap counts
+
+```{r}
+bonanza_hares <- read.csv(here("data","bonanza_hares.csv"))
+
+bonanza_hares$date_formatted <- 
+  as.Date(bonanza_hares$date, "%m/%d/%y") # Add a date_formatted column to get YYYY-MM-DD
+
+hares_juvenile<- bonanza_hares %>% 
+  filter(age == "j") %>%  # Create subset that is for juvenile hares
+  mutate(juvenile_year = year(date_formatted))  # add column that has the 'year'
+
+annual_hares_juvenile <- hares_juvenile %>% 
+  count(juvenile_year) %>% 
+  rename("sample_size"= n)
+
+ggplot(data= hares_juvenile, aes(juvenile_year))+
+  geom_histogram(color= "black", 
+                 bins = 30, binwidth = 1)+
+  labs(x = "Year", 
+       y = "Number of Hares", 
+       title = "Number of Juvenile Hares Trapped from 1999-2012 (Wee)")
+
+juvenile_summary <- annual_hares_juvenile %>% 
+  summarize(
+    mean_juvenile = mean(sample_size),
+    median_juvenile = median(sample_size),
+    min_juvenile = min(sample_size),
+    max_juvenile = max(sample_size)
+  )
+
+```
+# Figure 1: Graph showing the number of juvenile hares trapped between 1999-2012. 
+No juvenile snowshoe hares were trapped in 2002 and 2009. 
