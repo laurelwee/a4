@@ -30,31 +30,105 @@ library(dplyr)
 bonanza_hares <- read.csv(here("data","bonanza_hares.csv"))
 
 bonanza_hares$date_formatted <- 
-  as.Date(bonanza_hares$date, "%m/%d/%y") # Add a date_formatted column to get YYYY-MM-DD
+  as.Date(bonanza_hares$date, "%m/%d/%y") 
+# Add a date_formatted column to get YYYY-MM-DD
 
 hares_juvenile<- bonanza_hares %>% 
-  filter(age == "j") %>%  # Create subset that is for juvenile hares
-  mutate(juvenile_year = year(date_formatted))  # add column that has the 'year'
+  filter(age == "j") %>%  
+  # Create subset that is for juvenile hares
+  mutate(juvenile_year = year(date_formatted)) %>%  
+# add column that has the 'year'
+  rename("site"= grid) %>% 
+  mutate(sex = case_when(
+    sex %in% "f" ~ "Female",
+    sex %in% "m" ~ "Male",
+    sex %in% "NA" ~ "Sex unknown")
+  ) %>% 
+  mutate(site_full = case_when(
+    site %in% "bonbs" ~ "Bonanza Black Spruce",
+    site %in% "bonmat" ~ "Bonanza Mature",
+    site %in% "bonrip" ~ "Bonanza Riparian"
+  ))
 
 annual_hares_juvenile <- hares_juvenile %>% 
   count(juvenile_year) %>% 
   rename("sample_size"= n)
 
-ggplot(data= hares_juvenile, aes(juvenile_year))+
+ggplot(data= hares_juvenile, 
+       aes(juvenile_year))+
   geom_histogram(color= "black", 
-                 bins = 30, binwidth = 1)+
+                 bins = 30, binwidth = 1, alpha = .75)+
   labs(x = "Year", 
        y = "Number of Hares", 
-       title = "Number of Juvenile Hares Trapped from 1999-2012 (Wee)")
-
-juvenile_summary <- annual_hares_juvenile %>% 
-  summarize(
-    mean_juvenile = mean(sample_size),
-    median_juvenile = median(sample_size),
-    min_juvenile = min(sample_size),
-    max_juvenile = max(sample_size)
-  )
-
+       title = "Number of Juvenile Hares Trapped from 1999-2012 (Wee)")+
+  theme_minimal()
 ```
 # Figure 1: Graph showing the number of juvenile hares trapped between 1999-2012. 
-No juvenile snowshoe hares were trapped in 2002 and 2009. 
+
+```{r}
+juvenile_summary <- annual_hares_juvenile %>% 
+  summarize(
+    mean = mean(sample_size), 
+    median  = median(sample_size),
+    min  = min(sample_size),
+    max = max(sample_size)) 
+```
+# Table 1: 
+
+Summary stuff: No juvenile snowshoe hares were trapped in 2002 and 2009. The minimum and maximum juvenile hares trapped are 2 and 126 with the mean and median are 32 and 19.
+Notable stuff: There is a negative trend in juvenile snowshoe hares trapped over time since 1999. 
+Moving forward: Collect every year for the same number of days and traps...
+
+
+### ii. Visualize juvenile hare weights
+
+```{r}
+juvenile_weight <- hares_juvenile %>% 
+  select(site, sex, weight, age)
+
+juvenile_weight_summary <- juvenile_weight %>% 
+  group_by(sex) %>% 
+  summarize(
+    mean_weight = mean(weight),
+    median_weight = median(weight), 
+    sd_weight = sd(weight),
+    sample_size = n())
+```
+
+
+```{r}
+ggplot() +
+  geom_beeswarm(data = juvenile_weight, aes(x = sex, y= weight, color = sex, alpha = .75)) +
+  scale_color_manual(values = c("goldenrod2","cyan4"), na.value = "coral") +
+  geom_boxplot(fill = NA, width = 0.2, outlier.color = NA) +  
+  geom_point(data = juvenile_weight_summary, aes(x = sex, y = mean_weight), 
+             color = "black",
+             size = 3) +
+  theme_minimal() +
+  labs(x = "Juvenile Hare Sex",
+       y = "Weight ")
+
+```
+
+Figure 2:
+
+Table 2:
+```{r}
+# kable the summary table
+
+#The actual difference in means
+#Effect size (Cohen's *d*)
+#Outcome of a two-sample t-test
+
+```
+
+## iv. Relationship between juvenile weight and hind foot length.
+
+```{r}
+juvenile_weight_foot <- hares_juvenile %>% 
+  select(age, sex, site_full,hindft)
+```
+### d. Summary
+
+### e. Citations
+
