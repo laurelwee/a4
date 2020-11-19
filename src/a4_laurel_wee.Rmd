@@ -63,7 +63,9 @@ ggplot(data= hares_juvenile,
        title = "Number of Juvenile Hares Trapped from 1999-2012 (Wee)")+
   theme_minimal()
 ```
-# Figure 1: Graph showing the number of juvenile hares trapped between 1999-2012. 
+# Figure 1: Number of juvenile snowshoe hares trapped each year between 1999-2012. 2002 and 2009 have no recorded juveniles trapped. Data: Kielland et. al. (2017).
+
+# Table 1: Descriptive statistics (mean, median, min, and max) showing the distribution of juvenile showshoe hares caught annually. Data: Kielland et. al. (2017).
 
 ```{r}
 juvenile_summary <- annual_hares_juvenile %>% 
@@ -72,8 +74,13 @@ juvenile_summary <- annual_hares_juvenile %>%
     median  = median(sample_size),
     min  = min(sample_size),
     max = max(sample_size)) 
+
+juvenile_summary %>% 
+  kable(col.names = c("Mean Trapped", "Median Trapped" , "Minimum Trapped", "Maximum Trapped")) %>% 
+  kable_styling(bootstrap_options = "striped", full_width = FALSE)
 ```
-# Table 1: 
+
+## Frequency of snowshoe hares trapped annually
 
 Summary stuff: No juvenile snowshoe hares were trapped in 2002 and 2009. The minimum and maximum juvenile hares trapped are 2 and 126 with the mean and median are 32 and 19.
 Notable stuff: There is a negative trend in juvenile snowshoe hares trapped over time since 1999. 
@@ -89,32 +96,34 @@ juvenile_weight <- hares_juvenile %>%
 juvenile_weight_summary <- juvenile_weight %>% 
   group_by(sex) %>% 
   summarize(
-    mean_weight = mean(weight),
-    median_weight = median(weight), 
-    sd_weight = sd(weight),
+    mean_weight = mean(weight, na.rm = T),
+    median_weight = median(weight, na.rm = T), 
+    sd_weight = sd(weight, na.rm = T),
     sample_size = n())
 ```
 
 
 ```{r}
 ggplot() +
-  geom_beeswarm(data = juvenile_weight, aes(x = sex, y= weight, color = sex, alpha = .75)) +
+  geom_beeswarm(data = juvenile_weight, aes(x = sex, y= weight, color= sex))+
   scale_color_manual(values = c("goldenrod2","cyan4"), na.value = "coral") +
-  geom_boxplot(fill = NA, width = 0.2, outlier.color = NA) +  
+  geom_boxplot(data = juvenile_weight, aes(x = sex, y= weight), fill = NA, width = 0.2) +
   geom_point(data = juvenile_weight_summary, aes(x = sex, y = mean_weight), 
              color = "black",
              size = 3) +
   theme_minimal() +
   labs(x = "Juvenile Hare Sex",
-       y = "Weight ")
+       y = "Weight", title = " Weight of Juvenile Snowshoe Hares (Wee)")
 
 ```
 
-Figure 2:
+Figure 2: 
 
-Table 2:
+Table 2: 
 ```{r}
-# kable the summary table
+juvenile_weight_summary %>% 
+  kable(col.names = c("Sex", "Mean Weight (g)", "Median Weight (g)" , "Standard deviation (g)" , "Sample size")) %>% 
+  kable_styling(bootstrap_options = "striped", full_width = FALSE)
 
 #The actual difference in means
 #Effect size (Cohen's *d*)
