@@ -18,15 +18,12 @@ library(dplyr)
 ```
 
 ### A. Introduction
-This report explores the differences in snowshoe hare size across sex (male, female, and unknown) at three different sites (Bonanza Black Sruce, Bonanza Mature, and Bonanza Riparian) in the Bonanza Creek Experimental Forest in the Tanana Valley in Alaska from 1999 to 2011 (Kielland et al. 2017). We look specifically at weight between different sexes and Bonanza sites, and the relationship between weight and hind-foot length. 
+This report explores the differences in snowshoe hare size across sex (male, female, and unknown) at three different sites (Bonanza Black Spruce, Bonanza Mature, and Bonanza Riparian) in the Bonanza Creek Experimental Forest in the Tanana Valley in Alaska from 1999 to 2011 (Kielland et al. 2017). We look specifically at weight between different sexes and Bonanza sites, and the relationship between weight and hind-foot length. 
 
 ### B. Data and analysis
+Snowshoe hare data were collected and made available by Dr. Knut Kiellan and colleagues at the Bonanza Creek Experimental Forest in Tanana Valley, Alaska. The data contain observations for hares was done through capture-recapture at five sites from 1999-2011. Following exploratory data visualization, weight  difference between male and female juvenile hares are analyzed through two-sample t-tests using a significance level (α) of 0.05 throughout. Differences between groups are described by Cohen’s d effect size. The relationship between weight and hind-foot length is explored by simple linear regression. All analyses are in R version 4.0.2 using RStudio version 1.3.1073.
 
 
-### C. Exploratory findings
-
-## i. Annual juvenile hare trap counts
-Snowshoe juvenile hare weight (g) were compared across the collection years; sex and trap site are not included as variables in annual counts observations, but will be explored moving forward.  The minimum and maximum juvenile hares trapped are `r juvenile_summary$min` and `r juvenile_summary$max` with the mean and median are `r juvenile_summary$mean` and `r juvenile_summary$median`.No juvenile snowshoe hares were trapped in 2002 and 2009. There is a decreasing trend in juvenile snowshoe hares trapped over time since 1999 (Figure 1, Table 1). Future data collection should be improved to ensure that analyses are comprehensive. Some possibilities are to collect every year for the same number of days, have the same number of traps set each field collection day, and try to have similar times of year. 
 
 ```{r}
 # Read in data ' bonanaza_hares.csv' using 'here' package.
@@ -57,9 +54,6 @@ annual_hares_juvenile <- hares_juvenile %>%
   count(juvenile_year) %>% 
   rename("sample_size"= n)
 ```
-
-**Table 1:** Descriptive statistics (mean, median, min, and max) showing the distribution of juvenile showshoe hares caught annually. Data: Kielland et. al. (2017).
-
 ```{r}
 # Create a subset of data for the summary statistics of annual hares trapped. 
 juvenile_summary <- annual_hares_juvenile %>%  
@@ -74,6 +68,13 @@ juvenile_summary %>%
   kable(col.names = c("Mean Trapped", "Median Trapped" , "Minimum Trapped", "Maximum Trapped")) %>% 
   kable_styling(bootstrap_options = "striped", full_width = FALSE)
 ```
+### C. Exploratory findings
+
+## i. Annual juvenile hare trap counts
+Snowshoe juvenile hare weight (g) were compared across the collection years; sex and trap site are not included as variables in annual counts observations, but will be explored moving forward.  The minimum and maximum juvenile hares trapped are `r juvenile_summary$min` and `r juvenile_summary$max` with the mean and median are `r juvenile_summary$mean` and `r juvenile_summary$median`.No juvenile snowshoe hares were trapped in 2002 and 2009. There is a decreasing trend in juvenile snowshoe hares trapped over time since 1999 (Figure 1, Table 1). Future data collection should be improved to ensure that analyses are comprehensive. Some possibilities are to collect every year for the same number of days, have the same number of traps set each field collection day, and try to have similar times of year. Data of the captures per field day could also be useful in order to account for the possibility of recapture on other days.
+
+**Table 1:** Descriptive statistics (mean, median, min, and max) showing the distribution of juvenile
+showshoe hares caught annually. Data: Kielland et. al. (2017).
 
 ```{r}
 # Make a graph showing the annual juvenile hares trapped
