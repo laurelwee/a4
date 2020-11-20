@@ -18,20 +18,22 @@ library(dplyr)
 ```
 
 ### A. Introduction
-This report explores the differences in snowshoe hare size across sex (male, female, and unknown) at three different sites (Bonanza Black Spruce, Bonanza Mature, and Bonanza Riparian) in the Bonanza Creek Experimental Forest in the Tanana Valley in Alaska from 1999 to 2011 (Kielland et al. 2017). We look specifically at weight between different sexes and Bonanza sites, and the relationship between weight and hind-foot length. 
+This report explores the differences in snowshoe hare size across sex (male, female, and unknown) at three different sites (Bonanza Black Spruce, Bonanza Mature, and Bonanza Riparian) in the Bonanza Creek Experimental Forest in the Tanana Valley in Alaska. Measurements of trapped snowshoe hares were taken from 1999 to 2012 (Kielland et al. 2017). We look specifically at weight between different sexes and Bonanza sites, and the relationship between weight and hind-foot length. 
 
 ### B. Data and analysis
-Snowshoe hare data were collected and made available by Dr. Knut Kiellan and colleagues at the Bonanza Creek Experimental Forest in Tanana Valley, Alaska. The data contain observations for hares was done through capture-recapture at five sites from 1999-2011. Following exploratory data visualization, weight  difference between male and female juvenile hares are analyzed through two-sample t-tests using a significance level (α) of 0.05 throughout. Differences between groups are described by Cohen’s d effect size. The relationship between weight and hind-foot length is explored by simple linear regression. All analyses are in R version 4.0.2 using RStudio version 1.3.1073.
+Snowshoe hare data were collected and made available by Dr. Knut Kiellan and colleagues at the Bonanza Creek Experimental Forest in Tanana Valley, Alaska. The data contain observations for hares was done through capture-recapture at five sites from 1999-2012. Following exploratory data visualization, weight  difference between male and female juvenile hares are analyzed through two-sample t-tests using a significance level (α) of 0.05 throughout. Differences between groups are described by Cohen’s d effect size. The relationship between weight and hind-foot length is explored by simple linear regression. All analyses are in R version 4.0.2 using RStudio version 1.3.1073.
 
+```{r, include=FALSE}
+# Here we wrangle data and create initial subsets of data to look at the annual capture/trapped amounts 
 
-
-```{r}
 # Read in data ' bonanaza_hares.csv' using 'here' package.
 bonanza_hares <- read.csv(here("data","bonanza_hares.csv")) 
+
 
 # Add a date_formatted column to get YYYY-MM-DD
 bonanza_hares$date_formatted <- 
   as.Date(bonanza_hares$date, "%m/%d/%y") 
+
 
 # Create subset that is for juvenile hares
 hares_juvenile<- bonanza_hares %>% 
@@ -40,34 +42,30 @@ hares_juvenile<- bonanza_hares %>%
   rename("site"= grid) %>% # Renamed grid column to 'site' for ease for later exploration and full rename
   mutate(sex = case_when( # Rename 'sex' column to have full sex names 
     sex %in% "f" ~ "Female",
-    sex %in% "m" ~ "Male",
-    sex %in% "NA" ~ "Sex unknown")
+    sex %in% "m" ~ "Male")
   ) %>% 
   mutate(site_full = case_when( # Add column to include full site names
-    site %in% "bonbs" ~ "Bonanza Black Spruce",
-    site %in% "bonmat" ~ "Bonanza Mature",
-    site %in% "bonrip" ~ "Bonanza Riparian"
+    site %in% "bonbs" ~ "Bonanza Black Spruce",  #'bonbs' is 'Bonanza Black Spruce'
+    site %in% "bonmat" ~ "Bonanza Mature",  #'bonmat' is 'Bonanza Mature'
+    site %in% "bonrip" ~ "Bonanza Riparian"  #'bonrip' is 'Bonanza Riparian'
   ))
+
 
 # Create a subset to make annual counts of juvenile hares 
 annual_hares_juvenile <- hares_juvenile %>% 
   count(juvenile_year) %>% 
   rename("sample_size"= n)
-```
-```{r}
-# Create a subset of data for the summary statistics of annual hares trapped. 
+
+
+# Create a subset of data for the summary statistics of annual hares trapped (mean, median, min, max). 
 juvenile_summary <- annual_hares_juvenile %>%  
   summarize(
     mean = mean(sample_size), 
     median  = median(sample_size),
     min  = min(sample_size),
-    max = max(sample_size)) 
-
-# Create a table for the summary statistics of annual hares trapped. 
-juvenile_summary %>% 
-  kable(col.names = c("Mean Trapped", "Median Trapped" , "Minimum Trapped", "Maximum Trapped")) %>% 
-  kable_styling(bootstrap_options = "striped", full_width = FALSE)
+    max = max(sample_size))
 ```
+
 ### C. Exploratory findings
 
 ## i. Annual juvenile hare trap counts
@@ -75,8 +73,14 @@ Snowshoe juvenile hare weight (g) were compared across the collection years; sex
 
 **Table 1:** Descriptive statistics (mean, median, min, and max) showing the distribution of juvenile
 showshoe hares caught annually. Data: Kielland et. al. (2017).
+```{r, capture_stats, fig.align = "center"}
+# Make the summary statistics table show up in the knitted document.
+juvenile_summary %>% 
+  kable(col.names = c("Mean Trapped", "Median Trapped" , "Minimum Trapped", "Maximum Trapped")) %>% 
+  kable_styling(bootstrap_options = "striped", full_width = FALSE)
+```
 
-```{r}
+```{r,  basic_capture_plot, fig.align = "center"}
 # Make a graph showing the annual juvenile hares trapped
 ggplot(data= hares_juvenile, 
        aes(juvenile_year))+
@@ -92,13 +96,16 @@ ggplot(data= hares_juvenile,
 
 ### ii. Visualize juvenile hare weights
 
-**Table 2:** Descriptive statistics (mean, median, standard deviation, and sample size) showing the weights of juvenile showshoe hares separated by sex. Data: Kielland et. al. (2017).
-```{r}
+
+```{r, include=FALSE}
+# Descriptive statistics subsets and table
+
 # Create a subset of data that includes the weight and sex of juvenile hares.
 juvenile_weight <- hares_juvenile %>% 
   select(site_full, sex, weight, age)
 
-# Create a table for the summary statistics of weight of juvenile hares separating by sex. 
+# Create a table for the summary statistics (mean, median, standard deviation, and sample size) of weight of juvenile hares separating by sex. 
+
 juvenile_weight_summary <- juvenile_weight %>% 
   group_by(sex) %>% 
   summarize(
@@ -106,7 +113,14 @@ juvenile_weight_summary <- juvenile_weight %>%
     median_weight = median(weight, na.rm = T), 
     sd_weight = sd(weight, na.rm = T),
     sample_size = n())
+```
 
+
+Weight (all in grams) were compared across the three sex options (male, female, and unknown); sex and site are were included as variables here. Male juvenile hares have a greater weight than females across all three sites. ( `r juvenile_weight_summary[2,2]` $\pm$ `r juvenile_weight_summary[2,4]` g, compared to female juvenile hares ` r juvenile_weight_summary[1,2]` $\pm$ `r juvenile_weight_summary[1,4]` g; mean $\pm$ 1 standard deviation), (Table 2, Figure 2). 
+
+**Table 2:** Descriptive statistics (mean, median, standard deviation, and sample size) showing the weights of juvenile showshoe hares separated by sex (and NA as captures where sex was not determined). Data: Kielland et. al. (2017).
+
+```{r, descriptive_stats, fig.align = "center"}
 # Make the summary statistics table show up in the knitted document.
 juvenile_weight_summary %>% 
   kable(col.names = c("Sex", "Mean Weight (g)", "Median Weight (g)" , "Standard deviation (g)" , "Sample size")) %>% 
@@ -114,21 +128,26 @@ juvenile_weight_summary %>%
 ```
 
 
-```{r}
+```{r, basic_weight_plot, fig.align = "center"}
 # Create a data visualization comparing the juvenile hare weight by sex and site.  
 ggplot() +
+  # Beeswarm to show spread of weights for separate sexes and sites
   geom_beeswarm(data = juvenile_weight, aes(x = sex, y= weight, color= sex))+
   scale_color_manual(values = c("goldenrod2","cyan4"), na.value = "coral") +
+  # Facet to visualize data for each site separately. 
   facet_wrap(~site_full)+
+  # Boxplot to show median and 1st and 3rd quartiles for weight
   geom_boxplot(data = juvenile_weight, 
                aes(x = sex, y= weight), 
                fill = NA, 
                width = 0.2) +
+  # Point to show the mean weight
   geom_point(data = juvenile_weight_summary, 
              aes(x = sex, y = mean_weight), 
              color = "black",
              size = 3) +
-   geom_errorbar(data = juvenile_weight_summary, 
+  # Error bars to show the mean +- 1sd
+  geom_errorbar(data = juvenile_weight_summary, 
                 aes(x = sex, 
                     ymin = mean_weight - sd_weight,
                     ymax = mean_weight + sd_weight),
@@ -139,31 +158,29 @@ ggplot() +
        y = "Weight", title = " Weight of Juvenile Snowshoe Hares (Wee)")
 
 ```
-**Figure 2:**  Weight of juvenile snowshoe hares trapped in the Tanana valley separated by observation location and sex. Data: Kielland et al.
+**Figure 2:**  Weight of juvenile snowshoe hares trapped in the Tanana valley separated by observation location and sex. Gold (female), teal (male) and coral (NA) points indicate individual observations for weight (gram) of juvenile snowshoe hares. Box endpoints indicate the 25th and 75th percentile values; the black line and black point within the box indicate the median and mean value for each sex, respectively. Error bars show values that are within one standard deviation from the mean weight for each sex. Data: Kielland et al.
 
-Observations: 
-
-Female juvenile hares have a lower mean and median. 
-
-```{r}
+```{r, hares_ttest, include=FALSE}
 # T-test code: 
 
 # Make vectors of weight for male & female hares
 m_hares_juvenile <- hares_juvenile %>% 
   filter(sex == "Male") %>% 
   pull(weight)
+m_hares_juvenile
 
 f_hares_juvenile <- hares_juvenile %>% 
   filter(sex == "Female") %>% 
   pull(weight)
+f_hares_juvenile
 
 # Plot histograms & qq-plots to check assumptions
-hist(m_hares_juvenile) # Looks normal
-qqnorm(m_hares_juvenile) # Relatively linear
-hist(f_hares_juvenile) # Possibly a bit negatively skewed
+hist(m_hares_juvenile) # Looks normal with positive skew
+qqnorm(m_hares_juvenile) # Relatively linear, some curvature 
+hist(f_hares_juvenile) # Looks normal
 qqnorm(f_hares_juvenile) # Looks very linear
 
-# Overall: assumptions of normality hold, & sample size additionally >> Central Limit Theorem (means will be normally distributed). Two-sample t-test OK for means comparison! 
+# Overall: assumptions of normality hold, & sample size additionally >> Central Limit Theorem (means will be normally distributed). Two-sample t-test OK for means comparison. 
 
 # Run the t-test:
 hares_ttest <- t.test(m_hares_juvenile, f_hares_juvenile)
@@ -181,14 +198,17 @@ female_sd <- sd(f_hares_juvenile)
 hares_effsize <- cohen.d(m_hares_juvenile, f_hares_juvenile, na.rm = TRUE)
 ```
 
+`r (male_mean) - (female_mean)`
+
+While the absolute difference in means is `r (male_mean)- (female_mean)` g (a `r ((male_mean - female_mean)/((male_mean + female_mean)/2)*100)` % difference), the difference in means is significant (Welch's two-sample t-test: t(`r round(hares_ttest_tidy$parameter,3)`) = `r round(hares_ttest_tidy$statistic,3)`, p < 0.001), and the effect size is large (Cohen's *d* = `r round(hares_effsize$estimate,2)`).
 
 ## iv. Relationship between juvenile weight and hind foot length.
-```{r}
+```{r, linear_plot, fig.align = "center"}
 # Create a data visualization comparing the juvenile hare weight by hind-foot length (mm). 
 ggplot(data = hares_juvenile, aes(x = hindft, y = weight)) +
-  geom_point() +
-  scale_shape_manual(values = c(16,17,18), 
-                     name = "Snowshoe Hare") +
+  geom_point(aes(color = sex), size = 2) +
+  scale_color_manual(values = c("goldenrod2","cyan4"), na.value= "coral", 
+                     name = "Sex") +
   geom_smooth(method = "lm", se = FALSE, color = "gray30") +
   theme_minimal() +
   labs(x = "Hind-foot length (mm)",
@@ -196,7 +216,8 @@ ggplot(data = hares_juvenile, aes(x = hindft, y = weight)) +
   theme(legend.position = c(0.15, 0.7))
 ```
 
-```{r}
+
+```{r, include= FALSE}
 
 # Do linear regression
 hares_lm <- lm(weight ~ hindft, data = hares_juvenile)
@@ -214,7 +235,20 @@ hares_cor <- cor.test(hares_juvenile$weight, hares_juvenile$hindft)
 # Tidy version of correlation output:
 hares_cor_tidy <- tidy(hares_cor)
 ```
+**Figure 3.** Relationship between hind-foot length (mm) and weight (g) all three sex categories. Points indicate individual juvenile hare measurements (female = gold circles; male = teal circles; NA = coral circle). Linear model summary: $\beta$~1~ = `r round(hares_lm_tidy$estimate[2], 2)` g mm^-1^, p < 0.001, R^2^ = `r round(hares_lm_glance$r.squared,2)`, Pearson's *r* = `r round(hares_cor_tidy$estimate,2)`). Data: Kielland et. al. (2017).
+
+
+The relationship between weight and hind-foot length appears relatively linear, both across and within sexes (Figure 3). Simple linear regression revealed that hind-foot length moderately predicts juvenile hare mass (p < 0.001, R^2^ = `r round(hares_lm_glance$r.squared,2)`) with an average slope of $\beta$ = `r round(hares_lm_tidy$estimate[2], 2)` g mm^-1^ (i.e., for each one millimeter increase in hind-foot length we expect an average increase in weight of `r round(hares_lm_tidy$estimate[2], 2)` g). Hind-foot length and weight are moderately, and significantly, positively correlated (Pearson's *r* = `r round(hares_cor_tidy$estimate,2)`, p < 0.001). Diagnostic plots (not included) reveal relatively normally distribution and heteroscedastic residuals. 
+
 ### d. Summary
+Exploratory data analysis reveals the following initial findings: 
+
+- Male juvenile snowshoe hares have the largest weight (grams) compared to female hares (the difference is significant, and the effect size is moderate).
+- Hind-foot length appears linearly related with weight across both sexes; the relationship (by simple linear regression) is significant, with a slope (expected average increase in body mass with a 1 mm increase in hind-foot length) of `r round(hares_lm_tidy$estimate[2], 2)` g mm^-1^. However, only `r round(hares_lm_glance$r.squared,2) *100` % of variance in weight is explained by variance in hind-foot length.
+
+Next steps : 
+
+-
 
 ### e. Citations
 Kielland, K., F.S. Chapin, R.W. Ruess, and Bonanza Creek LTER. 2017. Snowshoe hare physical data in Bonanza Creek Experimental Forest: 1999-Present ver 22. Environmental Data Initiative. https://doi.org/10.6073/pasta/03dce4856d79b91557d8e6ce2cbcdc14 (Accessed 2020-11-19).
